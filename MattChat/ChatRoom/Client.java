@@ -56,6 +56,7 @@ public class Client implements Runnable {
 				while (!done) {
 					String message = inputReader.readLine();
 					if (message.equals("/quit")) {
+						out.println("/quit");
 						inputReader.close();
 						shutdown();
 					} else {

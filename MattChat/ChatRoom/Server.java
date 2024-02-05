@@ -27,6 +27,7 @@ public class Server implements Runnable {
 		try {
 			server = new ServerSocket (9999);
 			threadPool = Executors.newCachedThreadPool();
+			System.out.println("Server Opened");
 			while (!done) {
 				Socket client = server.accept();
 				ConnectionHandler handler = new ConnectionHandler(client);
@@ -47,11 +48,23 @@ public class Server implements Runnable {
 		}
 	}
 	
+	// Broadcast a message to the whole server
+	public boolean privateMessage (String origin, String user, String message) {
+		for (ConnectionHandler ch : connections) {
+			if (user.equals(ch.nickname)) {
+				ch.sendMessage("[" + origin + " whispers]: " + message);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	// Shutdown the server
 	public void shutdown () {
 		try {
 			System.out.println("Server shutting down");
 			done = true;
+			threadPool.shutdown();
 			// Shutdown server
 			if (!server.isClosed()) {
 				server.close();
@@ -101,10 +114,16 @@ public class Server implements Runnable {
 							out.println("Command failed: No nickname provided");
 						}
 						
-					} else if (message.startsWith("/quit ")) {
+					} else if (message.startsWith("/quit")) {
 						// Quit command
 						broadcast(nickname + " has left the chat!");
 						shutdown();
+					} else if (message.startsWith("/msg ")) {
+						// Msg command
+						String[] messageSplit = message.split(" ", 3);
+						String msgName = messageSplit[1];
+						String msgContent = messageSplit[2];
+						if(!privateMessage(nickname, msgName, msgContent)) out.println("User " + messageSplit[1] + " not found");
 					} else {
 						broadcast(nickname + ": " + message);
 					}
