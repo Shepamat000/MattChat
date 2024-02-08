@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -57,6 +59,13 @@ public class Server implements Runnable {
 			}
 		}
 		return false;
+	}
+	
+	// Find time for /time command
+	public String fetchServerTime () {
+		Calendar calendar = Calendar.getInstance();
+		Date currentDate = calendar.getTime();
+		return currentDate.toString();
 	}
 	
 	// Shutdown the server
@@ -124,7 +133,9 @@ public class Server implements Runnable {
 						String msgName = messageSplit[1];
 						String msgContent = messageSplit[2];
 						if(!privateMessage(nickname, msgName, msgContent)) out.println("User " + messageSplit[1] + " not found");
-					} else {
+					} else if (message.startsWith("/time")) {
+						broadcast(nickname + ": /time\n" + fetchServerTime());
+					}else {
 						broadcast(nickname + ": " + message);
 					}
 				}
